@@ -43,9 +43,14 @@
 
 其原理上边讲了，相当于一个内机接了2个遥控，第二个遥控配上了WiFi网关。
 
-第二个内机不想中买线控网关了，觉得这看起来功能很简单啊，于是在网上搜相关的方案，搜到了这个：，这偏文章里通过红外来控制原始的控制面板，但有以下几个问题：如果需要远程控制，需要再加一个红外网关。而我最近在研究8266，手里拿着锤子看见所有东西都是钉子，于是开始改造。但改造失败，因为接上8266之后面板就会重启，之后会不断的重启，另外由于没有断电操作，把面板上的电源指示灯LED烧了，额外解决了最开始的#4个诉求。。。
+第二个内机不想再买线控网关了，觉得这看起来功能很简单啊，于是在网上搜相关的方案，搜到了这个：https://lecoding.com/post/2020/daikin-remote-controller-hack/ ，这偏文章里通过红外来控制原始的控制面板，但有以下几个问题：如果需要远程控制，需要再加一个红外网关。而我最近在研究8266，手里拿着锤子看见所有东西都是钉子，于是开始改造。但改造失败，因为接上8266之后面板就会重启，之后会不断的重启，另外由于没有断电操作，把面板上的电源指示灯LED烧了，额外解决了最开始的#4个诉求。。。
 
-改造计划暂时搁置，最近又在英文世界里冲浪，找找老外的解决方案，终于找到了一个使用Arduino来解决问题的，于是又燃起了改造的激情，这次增加了读取LED状态的接线，这样就能精确控制空调了。接线如下：
+![front_before](https://user-images.githubusercontent.com/2712885/144226767-0e6ff656-9adb-4948-8b66-f4ee0aca2bbd.jpg)
+
+改造计划暂时搁置，最近又在英文世界里冲浪，找找老外的解决方案，找到了一个使用Arduino来解决问题的：[AIRDUINO | ADDING NETWORK REMOTE CONTROL TO THE DAIKIN VRV WITH THE BRC1D61 OR SIMILAR THERMOSTATS](https://mattala.com.au/2016/08/14/airduino-network-enabling-the-daikin-vrv-with-the-brc1d61-or-similar-thermostats/)，于是又燃起了改造的激情，这次增加了读取LED状态的接线，这样就能精确控制空调了。接线如下：
+![front_done](https://user-images.githubusercontent.com/2712885/144226833-8ad835fd-67be-4d16-a9c5-cabd103a09f9.jpg)
+
+![back](https://user-images.githubusercontent.com/2712885/144226809-9030fd06-a16e-4151-8d8b-39529d08844e.jpg)
 
 ### 电源问题
 
@@ -53,7 +58,7 @@
 
 
 ## 最终方案
-1. 变压器3.3V接8266电源
+1. 220V接AC-DC电源变3.3V接8266电源
 2. 面板的GND接8266的GND
 3. 面板的2条引线分别串联20K左右的电阻，接8266的GPIO引脚
 
@@ -71,5 +76,6 @@
 
 
 家里有一台N1装了HASS+NodeRed+MQTT，自制了一个离线的语音控制器放在卧室，这样就可以开关（灯、暖气、空调、其他）基本靠吼了。
+
 
 
