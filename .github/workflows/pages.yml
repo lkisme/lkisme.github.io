@@ -27,6 +27,8 @@ jobs:
         run: cd themes/tranquilpeak; npm install; cd ../../
       - name: Build
         run: npm run build
+      - name: List files
+        run: ls -al public/
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
