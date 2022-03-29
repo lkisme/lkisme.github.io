@@ -23,8 +23,10 @@ jobs:
             ${{ runner.OS }}-npm-cache
       - name: Install Dependencies
         run: npm install
-      - name: install deps for tranquilpeak
-        run: cd themes/tranquilpeak; npm install && npm run prod; cd ../../;hexo generate
+      - name: Install deps for tranquilpeak
+        run: cd themes/tranquilpeak; npm install && npm run prod; cd ../../
+      - name: Install hexo & generate assets files
+        run: npm install hexo-cli --save;hexo generate
       - name: Build
         run: npm run build
       - name: List files
