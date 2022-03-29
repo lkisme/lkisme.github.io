@@ -104,4 +104,7 @@ theme: tranquilpeak
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
-  type: ''
+  type: git
+  repo: git@github.com:lkisme/lkisme.github.io.git
+  # example, https://github.com/hexojs/hexojs.github.io
+  branch: gh-pages
