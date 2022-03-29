@@ -26,13 +26,9 @@ jobs:
       - name: Install deps for tranquilpeak
         run: cd themes/tranquilpeak; npm install && npm run prod; cd ../../
       - name: Hexo Clean
-        uses: heowc/action-hexo@main
-        with:
-          args: clean
+        run: npm install -g hexo-cli; npm install
       - name: Hexo Generate
-        uses: heowc/action-hexo@main
-        with:
-          args: generate
+        run: hexo generate
       - name: Build
         run: npm run build
       - name: List files
