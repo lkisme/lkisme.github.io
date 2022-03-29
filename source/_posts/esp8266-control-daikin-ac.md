@@ -4,10 +4,10 @@ date: 2022-03-29 14:59:12
 tags: homeassistant 大金 智能家居
 categories: 智能家居
 metaAlignment: center
-thumbnailImage: https://user-images.githubusercontent.com/2712885/144000776-37a099fd-2056-4140-bc03-1bcf7cb4c0b5.png
+thumbnailImage: https://user-images.githubusercontent.com/2712885/160620588-05258808-20db-435d-9f98-5b71a6e3a119.jpg
 
 gallery:
-    - https://user-images.githubusercontent.com/2712885/144000776-37a099fd-2056-4140-bc03-1bcf7cb4c0b5.png "Dubai"
+    - https://user-images.githubusercontent.com/2712885/160620588-05258808-20db-435d-9f98-5b71a6e3a119.jpg "最终形态"
 ---
 
 ## 背景
@@ -90,5 +90,6 @@ gallery:
 
 家里有一台N1装了HASS+NodeRed+MQTT，自制了一个离线的语音控制器放在卧室，这样就可以开关（灯、暖气、空调、其他）基本靠吼了。
 
-
+### 最终形态
+![最终形态](https://user-images.githubusercontent.com/2712885/160620943-1db84d92-4889-4da0-9465-6e537c43c9e3.jpg)
 
