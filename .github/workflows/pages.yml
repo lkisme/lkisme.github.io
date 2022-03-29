@@ -24,7 +24,7 @@ jobs:
       - name: Install Dependencies
         run: npm install
       - name: install deps for tranquilpeak
-        run: cd themes/tranquilpeak; npm install && npm run prod; cd ../../
+        run: cd themes/tranquilpeak; npm install && npm run prod; cd ../../;hexo generate
       - name: Build
         run: npm run build
       - name: List files
