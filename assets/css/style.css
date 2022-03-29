@@ -8280,7 +8280,8 @@ blockquote {
       #about #about-card #about-btn-close:hover {
         color: #738691; }
     #about #about-card #about-card-picture {
-      margin-bottom: 15px; }
+      margin-bottom: 15px;
+      object-fit: cover; }
     #about #about-card #about-card-name {
       margin-top: 0;
       margin-bottom: 20px; }
@@ -8310,7 +8311,8 @@ blockquote {
     #about #about-card #about-card-picture {
       width: 90px;
       height: 90px;
-      border-radius: 45px; }
+      border-radius: 45px;
+      object-fit: cover; }
     #about #about-card #about-card-job {
       margin-bottom: 15px; } }
 
@@ -8320,7 +8322,8 @@ blockquote {
     #about #about-card #about-card-picture {
       width: 110px;
       height: 110px;
-      border-radius: 55px; }
+      border-radius: 55px;
+      object-fit: cover; }
     #about #about-card #about-card-job,
     #about #about-card #about-card-location {
       display: inline-block;
@@ -8689,7 +8692,8 @@ blockquote {
     margin-bottom: 15px; }
     #sidebar .sidebar-profile .sidebar-profile-picture {
       display: block;
-      margin: 0 auto; }
+      margin: 0 auto;
+      object-fit: cover; }
     #sidebar .sidebar-profile .sidebar-profile-name {
       font-size: 1.1em;
       color: #ebebeb; }
