@@ -7,6 +7,9 @@ title: 种豆南山下
 subtitle: ''
 description: ''
 keywords:
+  - hexo
+  - java
+  - 智能家居
 author: KK
 language: 
   - zh-cn
@@ -108,3 +111,8 @@ deploy:
   repo: git@github.com:lkisme/lkisme.github.io.git
   # example, https://github.com/hexojs/hexojs.github.io
   branch: gh-pages
+
+feed:
+    type: atom
+    path: atom.xml
+    limit: 20

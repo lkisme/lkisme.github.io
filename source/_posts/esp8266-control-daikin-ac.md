@@ -1,9 +1,14 @@
 ---
 title: 大金空调面板Hack添加WiFi支持
 date: 2022-03-29 14:59:12
-tags:
+tags: homeassistant 大金 智能家居
+categories: 智能家居
+metaAlignment: center
+thumbnailImage: https://user-images.githubusercontent.com/2712885/144000776-37a099fd-2056-4140-bc03-1bcf7cb4c0b5.png
+
+gallery:
+    - https://user-images.githubusercontent.com/2712885/144000776-37a099fd-2056-4140-bc03-1bcf7cb4c0b5.png "Dubai"
 ---
-# 大金空调面板Hack添加WiFi支持
 
 ## 背景
 装修时家里装了大金的1拖2中央空调，当时可以选“金制家中”的套餐，只要加1000块，结果脑抽没选。入住之后马上感觉到不爽的地方：
@@ -11,6 +16,8 @@ tags:
 2. 无法远程控制：冬天要起床开关空调，
 3. 其他扩展功能：定时关定时开只能在面板上选择，且只能以半小时为单位。
 4. 指示灯的问题：晚上睡觉指示灯一直亮着，烦人
+
+<!-- more -->
 
 ## 可选方案
 首先是想买一套金制家中，大概就是一个Wi-Fi网关+几个传感器，这个主要问题是要装在外机上（大误），于是放弃了，继续搜索可以接入米家控制的设备，大概有三种：
