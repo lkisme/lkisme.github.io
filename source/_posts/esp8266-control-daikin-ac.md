@@ -4,14 +4,16 @@ date: 2022-03-29 14:59:12
 tags: homeassistant 大金 智能家居
 categories: 智能家居
 metaAlignment: center
-thumbnailImage: https://user-images.githubusercontent.com/2712885/160620588-05258808-20db-435d-9f98-5b71a6e3a119.jpg
+thumbnailImage: https://user-images.githubusercontent.com/2712885/161278001-c51e14f9-c5c0-44f2-9dce-0bb5f0f5542b.jpg 
 thumbnailImagePosition: bottom
-coverImage: https://bing.ioliu.cn/photo/TeatroAntico_ZH-CN7370959605?force=home_1
-coverCaption: "陶尔米纳古剧院"
+coverImage: https://user-images.githubusercontent.com/2712885/161278001-c51e14f9-c5c0-44f2-9dce-0bb5f0f5542b.jpg 
+
+coverCaption: "The bund"
 coverMeta: out
 coverSize: partial
 
 ---
+
 
 ## 背景
 装修时家里装了大金的1拖2中央空调，当时可以选“金制家中”的套餐，只要加1000块，结果脑抽没选。入住之后马上感觉到不爽的地方：
