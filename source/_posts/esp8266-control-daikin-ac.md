@@ -5,9 +5,12 @@ tags: homeassistant 大金 智能家居
 categories: 智能家居
 metaAlignment: center
 thumbnailImage: https://user-images.githubusercontent.com/2712885/160620588-05258808-20db-435d-9f98-5b71a6e3a119.jpg
+thumbnailImagePosition: bottom
+coverImage: https://bing.ioliu.cn/photo/TeatroAntico_ZH-CN7370959605?force=home_1
+coverCaption: "陶尔米纳古剧院"
+coverMeta: out
+coverSize: partial
 
-gallery:
-    - https://user-images.githubusercontent.com/2712885/160620588-05258808-20db-435d-9f98-5b71a6e3a119.jpg "最终形态"
 ---
 
 ## 背景
