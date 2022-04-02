@@ -1,0 +1,824 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn,en,default">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="种豆南山下">
+    <title>使用廉价电视盒子安装Home Assistant - 种豆南山下</title>
+    <meta name="author" content="KK">
+    
+        <meta name="keywords" content="hexo,java,智能家居,">
+    
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"KK","sameAs":["https://github.com/lkisme","http://stackoverflow.com/users/2481485","https://twitter.com/","https://facebook.com/lkkme","https://plus.google.com/","https://www.linkedin.com/in/liukk","mailto:lkisme@me.com"],"image":"avatar.webp"},"articleBody":"本文将包含如下内容：\n\nHome Assistant简介\n可安装Armbian的盒子简单分析\n安装Armbian的简要步骤\n安装Home Assistant的简要步骤\n\nHome Assistant简介按照官网描述，HomeAssistant是一个开源的、以本地控制和隐私保护为基础的家庭自动化系统。有以下几个特点\n1. 开放  HA是一个开源的平台系统，可以在github找到相关源代码，同时它有丰富的开放API，因此有了丰富的插件（如Integration、Frontend等等）支持，可以带来这些好处：1）将其他平台的设备，全部接入HA，这样就实现了家庭智能设备的统一控制，如小米、涂鸦、Sonoff、；2）将HA上的设备统一接入其他平台，如你一堆的小米设备接入苹果的HomeKit，可以实现Siri来控制小米设备；3）其他自定义设备如软路由、NAS、DIY的设备通过各种方式接入HA控制；4）提供iOS、Android、PC各平台的控制终端\n2. 本地部署  HA往往部署在本地的设备，这样有2个好处：1）速度快，比如你想做一个开门后自动开灯且播放欢迎提示音的自动化，使用云服务可能要几秒，使用家庭本地网络的HA会节省了公网网络传输的时间消耗；2）隐私，如果你比较担心家里的智能音箱、各种智能设备在偷偷监听上报数据（这个事情完全靠厂商自觉，本身智能设备就要持续上报数据，你无法判断是否上报了与其功能无关的数据），使用HA就没有这方面的苦恼了。\n3. 更新频繁  HA目前一个月要更新好几个版本，一些漏洞在持续修复，能力也在持续优化，同时有很大的社区支持，\nHA安装官网给出4中安装方法（后2中不推荐）：\n\nHome Assistant Operating System：作为操作系统直接安装在机器上\nHome Assistant Container:容器安装，如docker\nHome Assistant Supervised：手动安装（不推荐）\nHome Assistant Core:手动安装（不推荐）\n\nHA底层基于Python，基本所有的系统都可以支持，所以几乎不挑硬件，X86、ARM平台都可以，官网推荐了两种ARM的单板系统（SBC，single-board computers）:\n\nHome assistant Yellow（基于树莓派）\n\n2. Home assistant Blue（基于Odroid）\n平替这两个SBC在中国不太好买，其次价格较高（Yellow的最低价格115刀，Blue的价格可以去搜Odroid N2，树莓派今年的价格也飙上去了）100刀都可以买到一个X86的主机来做server了。仔细看一下这个Blue，他的CPU是晶晨的S922X，晶晨还有S905系列，市场容量相当大，于是买了几个来试试。\n硬件要求\n\n\n部件\n要求\n备注\n\n\n\nCPU\n64位的4核ARM\n32位的晶晨S805（ARMv7）应该是不行的，跑很多东西找不到合适的包。S905、S922的各种型号，全志，只要能装Armbian都可以\n\n\n内存\n1G勉强也够，最好2G\n1G内存一般可用的有800M，我是用Docker跑，跑起来HA的7个容器，内存就已经捉襟见肘了，再跑一些插件、MQTT、nodered这些容器就不够用了，内存不够用会导致系统频繁读写交换空间Zram，导致系统负载高、无响应\n\n\n磁盘&#x2F;TF卡\n16G以上：8G的存储是不够的，armbian安装加上容器大概需要7G左右；最好是大牌的如铠侠、闪迪、三星这些；也可以外接一个16g以上的SSD\n我之前用过杂牌TF卡，读写太慢会因为IO负载高最终导致系统无响应，后来用N1+铠侠64G，用了几个月感觉有点浪费，最后用了盒子原生的2+16eMMC的配置，刚好够\n\n\n网络\n有线网卡不需要千兆，百兆足够，；无线没太大用处\n做服务器流量不大，但要响应快，有线比较靠谱\n\n\n蓝牙\n能驱动的板载蓝牙；USB蓝牙接收器；没有蓝牙也可以\n蓝牙的功能很重要，很多智能设备都是蓝牙的，如果armbian系统没有可驱动的蓝牙，也可以有其他替代办法\n\n\n由此看出，2G内存+16geMMC的配置是比较划算的，如果没有特殊需求，不需要另加其他外设。目前市场上还可以买到海思的ARM盒子，但海思芯片刷Armbian的不多，社区文档页少（可以看这个：glinuz&#x2F;hi3798mv100），尽量还是选择其他芯片。\n试过的盒子1. R3300-L\n根据成色、是否刷机、配件不同，价格也不同，普遍在50-70左右。\n最开始买了这个小红盒，由于含有一个读卡器，且通过AV孔可以不拆机按住Reset键从而直接刷机，所以还比较受欢迎。最开始刷了Openwrt+Docker-ce安装HA，因为内存只有1G，会出现上文说道的负载高无响应的问题，所以后来删除了HA，只用作Openwrt，Openwrt本身对内存的要求不高（只需要100M左右），目前一直在用，半年没重启过了，稳得很。\n2. N1现在全套配件的得150+了，不是很划算，但确实N1这种各方面都不错的盒子也不多。N1真的是各方面都基本够用，S905D+千兆网口+蓝牙+双频WiFi，不太有短板，怪不得这么几年过去了还是这么火，蓝牙是博通的芯片，可以Armbian直接驱动。但是如果刷Armbian会觉得它没有读卡器比较鸡肋，当然用USB外接读卡器或者直接接SSD都是好选项。N1+读卡器+64G卡用了大半年，没太大的问题，就是感觉老外接一个读卡器怪难受。\n3. M401、E900V22C等新版魔百和原装全套（盒子+网线+HDMI线+蓝牙遥控）价格在70左右，盒子比较新，不太买得到单机头的最近在网上捡了一个移动新出的盒子M401A，买的时候只看重了它2g内存+16geMMC的配置，终于不用外接TF卡了。买来之后发现这个CPU是S905L3A，性能还不错，只是当前蓝牙还无法驱动。先是插了一个蓝牙接收器，但是蓝牙老掉线，后来索性就不要蓝牙了。\n4. 其他ARM盒子、板子树莓派、香橙派、各种派\n安装步骤（卡刷）卡刷或者线刷都可以，其中卡刷简单方便，不容易损坏盒子本身（丢三码），下文以卡刷为例\n1. 寻找Armbian镜像并写入U盘或者TF卡根据型号在网上找到合适的镜像，注意尽量不要找太老的镜像，如果是Ubuntu尽量选1804版本的或者2004版本的，版本较老本身没有太大的问题，但随着软件更新，难免未来某些软件就不支持老版本的内核了。大家在网上找到的镜像其实都差不多，无非就是根据不同的硬件所带的dtb和驱动不同，所以如果无法找到相应的镜像，可以随便找一个较新的的镜像，修改合适的dtb就行了。这里提供一个R3300L的镜像： https://pan.baidu.com/s/1BesJhaKfKMF1WJapmUH6_Q 提取码: vs5g 下载：Armbian_5.99_Aml-g12_Ubuntu_bionic_default_5.3.0_rtl8189ftv.tar，不带桌面，带WiFi。持续更新的镜像下载：https://github.com/zzcand111/amlogic-s9xxx-armbian 。历史的一些镜像下载：https://users.armbian.com/balbes150/arm-64/ (5.9的内核)。要注意，5.9的内核我已经试过写入eMMC，可以正常使用，如果是5.9以上的内核，很多人说刷入eMMC会导致无法启动。将镜像解压出来img格式，用Rufus等软件写入TF卡或者U盘。\n2. 更换DTB，从U盘启动Armbian写好U盘镜像后，U盘上会有一个FAT32的名叫BOOT的分区，如果是https://users.armbian.com/balbes150/arm-64/ 下载的镜像，需要做2件事情：\n\n在extlinux&#x2F;extlinux.conf文件中修改dtb文件\n将u-boot-s905（只针对S905) u-boot-s905x2-s922* u-boot-s905x-s912（x905[w,d,l]）中的某1个名词改为u-boot.ext\n\n如果是其他地方下载的，只需要在BOOT分区的根目录下的uEnv.ini文件中修改dtb文件即可。M401a、E900V22c等s905L3a的芯片使用dtb：meson-g12a-u200.dtb，R3300L等s905L芯片使用meson-gxl-s905x-p212.dtb。其他的机器找到响应的dtb文件即可。\nU盘启动的方法R3300L用牙签插入AV孔，按住Reset键，然后插上电源。其他盒子可以尝试root后安装从U盘启动的APP，R401可以拆开外壳，Reset键在板子背后，其他还有按遥控器的方法，可以根据型号自行搜索。从U盘启动后可以看有线网络是否驱动，这个是最重要的，一般都可以驱动。第一次启动可能会花几分钟时间，因为系统要执行一些初始化的任务，可以插上HDMI屏幕，看一下是否成功。\n3. 备份eMMC的系统进入U盘的Armbian系统，执行命令ddbr，根据提示选择备份系统到U盘。\n4. 写入eMMC一般的CPU（ s905[x,w,l,x2,x3],s912,s922）执行命令/root/install-aml.sh，将系统写入eMMC。如果CPU是S905（不带任何后缀字母的版本），执行/root/install-aml-s905-emmc.sh。写入成功后断电重启。\n5. 更新证书如果下载的比较老的镜像，在更换apt源之前需要先更新本机证书：apt install --reinstall ca-certificates，不然由于本机证书比较旧，换源后会识别新的更新源证书无效。\n6. 换源123456789101112deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ focal main restricted universe multiverse#deb-src  focal main restricted universe multiversedeb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ focal-security main restricted universe multiverse#deb-src http://ports.ubuntu.com/ focal-security main restricted universe multiversedeb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ focal-updates main restricted universe multiverse#deb-src http focal-updates main restricted universe multiversedeb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ focal-backports main restricted universe multiverse#deb-src http://ports.ubuntu.com/ focal-backports main restricted universe multiverse\n换源后执行：apt update\n7. 安装docker-ce12345678910#创建安装目录cd; mkdir download;cd download#下载安装脚本curl -fsSL https://get.docker.com -o get-docker.sh#赋予权限chmod a+x get-docker.sh #执行安装./get-docker.sh --mirror Aliyun\n安装完成后，修改国内镜像（加速下载镜像），更改docker目标文件夹（方便备份）\n1234567891011121314151617vim /etc/docker/daemon.json#填入如下内容&#123;  &quot;bip&quot;: &quot;172.31.0.1/24&quot;,  &quot;data-root&quot;: &quot;/opt/docker/&quot;, #docker安装目录，如果eMMC不够，可以把此目录挂载到外部TF卡或者SSD  &quot;log-level&quot;: &quot;warn&quot;,  &quot;log-driver&quot;: &quot;json-file&quot;,  &quot;log-opts&quot;: &#123;     &quot;max-size&quot;: &quot;10m&quot;,     &quot;max-file&quot;: &quot;5&quot;   &#125;,   &quot;registry-mirrors&quot;: [     &quot;https://xxxx.mirror.aliyuncs.com&quot; #加速镜像   ]&#125;# 重启dockersystemctl restart docker\n8. 安装HA安装HA比较简单，只需要安装homeassistant-supervisor，它会自动安装所有其他镜像。根据网速、CPU、磁盘写入速度不同，安装时间不确定，大概十几分钟到1个小时之间。\n1234567891011121314#让homeassistant不做健康检查，/opt/docker为之前设置的docker安装目录vim /opt/docker/hassio/jobs.json写入：&#123;&quot;ignore_conditions&quot;: [&quot;healthy&quot;]&#125;#安装hassio-supervisordocker run -d --name hassio_supervisor  --privileged \\-v /var/run/docker.sock:/var/run/docker.sock \\ -v /var/run/dbus:/var/run/dbus \\-v /opt/docker/hassio:/data \\ #指定HA目录-e SUPERVISOR_SHARE=&quot;/opt/docker/hassio&quot; \\-e SUPERVISOR_NAME=hassio_supervisor \\-e HOMEASSISTANT_REPOSITORY=&quot;homeassistant/qemuarm-64-homeassistant&quot; \\--restart unless-stopped homeassistant/aarch64-hassio-supervisor:2022.03.5 #2022.03.5是版本号，可以去https://hub.docker.com/r/homeassistant/aarch64-hassio-supervisor/tags 找一个最新的稳定版版本\n想看到执行过程的，可以执行docker logs -f hassio_supervisor查看实时日志，有可能有些版本的docker安装好supervisor后不能上网，可以临时添加--net host使它可以上网下载其他镜像，完成后再去掉此选项。因为这几个HA的镜像必须在一个内网才能互相访问。\n9. 其他安装项其他如MQTT、nodered可以在HA安装好后使用HAsupervisor以插件的形式安装，但如果想自己安装也可以。\n1234567#安装MQTT，需要进入镜像修改配置文件docker run --name mqtt --restart=always -dit -p 1883:1883 -p 9001:9001 -v /mosquitto/data -v /mosquitto/log eclipse-mosquitto#安装nodered，需要手动设置/opt/docker/node_red_data的访问权限chmod 777 /opt/docker/node_red_datadocker run -d -it -p 1880:1880 -v /opt/docker/node_red_data:/data --name nodered nodered/node-red\n\n10. 网页打开HA页面，假设Armbian的IP是192.168.3.3，则电脑打开http://192.168.3.3:8123查看安装状态，如果安装完成，则会出现设置密码的界面。\n","dateCreated":"2022-04-02T22:02:25+00:00","dateModified":"2022-04-02T14:03:22+00:00","datePublished":"2022-04-02T22:02:25+00:00","description":"本文将包含如下内容：\n\nHome Assistant简介\n可安装Armbian的盒子简单分析\n安装Armbian的简要步骤\n安装Home Assistant的简要步骤","headline":"使用廉价电视盒子安装Home Assistant","image":["https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg","https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://lkisme.github.io/p/homeassistant-on-cheap-box/"},"publisher":{"@type":"Organization","name":"KK","sameAs":["https://github.com/lkisme","http://stackoverflow.com/users/2481485","https://twitter.com/","https://facebook.com/lkkme","https://plus.google.com/","https://www.linkedin.com/in/liukk","mailto:lkisme@me.com"],"image":"avatar.webp","logo":{"@type":"ImageObject","url":"avatar.webp"}},"url":"http://lkisme.github.io/p/homeassistant-on-cheap-box/","keywords":"homeassistant docker armbian","thumbnailUrl":"https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg"}</script>
+    <meta name="description" content="本文将包含如下内容：  Home Assistant简介 可安装Armbian的盒子简单分析 安装Armbian的简要步骤 安装Home Assistant的简要步骤">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="使用廉价电视盒子安装Home Assistant">
+<meta property="og:url" content="http://lkisme.github.io/p/homeassistant-on-cheap-box/index.html">
+<meta property="og:site_name" content="种豆南山下">
+<meta property="og:description" content="本文将包含如下内容：  Home Assistant简介 可安装Armbian的盒子简单分析 安装Armbian的简要步骤 安装Home Assistant的简要步骤">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.crowdsupply.com/img/7b5c/home-assistant-amber-with-cm4-no-heat-sink-top_jpg_md-xl.jpg">
+<meta property="og:image" content="https://cdn.hardkernel.com/wp-content/uploads/2020/07/odroidn2plusA.jpg">
+<meta property="og:image" content="https://user-images.githubusercontent.com/2712885/161371283-2a532ffd-d4c3-4c08-a9f4-2ae0ea84257f.jpg">
+<meta property="og:image" content="https://user-images.githubusercontent.com/2712885/161371289-b178610d-5090-44cf-8f14-56a9d3fe80bc.jpg">
+<meta property="og:image" content="https://user-images.githubusercontent.com/2712885/161371533-2e883c96-e6f3-46e6-b671-a95c30632806.jpg">
+<meta property="og:image" content="https://user-images.githubusercontent.com/2712885/161371740-77038928-5101-4a5b-ae7e-0f7814c70822.jpg">
+<meta property="og:image" content="https://user-images.githubusercontent.com/2712885/161371952-f717f3af-c8dd-4748-9222-cd16f298e3ca.jpg">
+<meta property="article:published_time" content="2022-04-02T22:02:25.000Z">
+<meta property="article:modified_time" content="2022-04-02T14:03:22.566Z">
+<meta property="article:author" content="KK">
+<meta property="article:tag" content="homeassistant docker armbian">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.crowdsupply.com/img/7b5c/home-assistant-amber-with-cm4-no-heat-sink-top_jpg_md-xl.jpg">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://lkisme.github.io/assets/images/avatar.webp"/>
+    
+    
+        <meta property="og:image" content="https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg"/>
+    
+    
+        <meta property="og:image" content="https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg"/>
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-owgshcay7ldz3xraqduq1mfdrbarerdpc2aesfpg5uybodtcu6t5soe7humb.min.css">
+
+    <!--STYLES END-->
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=308719934"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', '308719934');
+    </script>
+
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="5">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            种豆南山下
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="打开链接: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.webp" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="5">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.webp" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">KK</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="搜索"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/lkisme"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="http://stackoverflow.com/users/2481485"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://twitter.com/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Twitter"
+                        >
+                        <i class="sidebar-button-icon fab fa-twitter" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Twitter</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://facebook.com/lkkme"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Facebook"
+                        >
+                        <i class="sidebar-button-icon fab fa-facebook" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Facebook</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://plus.google.com/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Google Plus"
+                        >
+                        <i class="sidebar-button-icon fab fa-google-plus" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Google Plus</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/in/liukk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="mailto:lkisme@me.com"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="邮箱"
+                        >
+                        <i class="sidebar-button-icon fa fa-envelope" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">邮箱</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+        <div class="post-header-cover
+                    text-left
+                    post-header-cover--partial"
+             style="background-image:url('https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg');"
+             data-behavior="5">
+            
+        </div>
+
+            <div id="main" data-behavior="5"
+                 class="hasCover
+                        hasCoverMetaOut
+                        hasCoverCaption">
+                
+<article class="post">
+    
+        <span class="post-header-cover-caption caption">The bund</span>
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            使用廉价电视盒子安装Home Assistant
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2022-04-02T22:02:25+00:00">
+	
+		    4月 02, 2022
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/%E6%99%BA%E8%83%BD%E5%AE%B6%E5%B1%85/">智能家居</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>本文将包含如下内容：</p>
+<ol>
+<li>Home Assistant简介</li>
+<li>可安装Armbian的盒子简单分析</li>
+<li>安装Armbian的简要步骤</li>
+<li>安装Home Assistant的简要步骤<span id="more"></span></li>
+</ol>
+<h1 id="Home-Assistant简介"><a href="#Home-Assistant简介" class="headerlink" title="Home Assistant简介"></a>Home Assistant简介</h1><p>按照<a target="_blank" rel="noopener" href="https://www.home-assistant.io/">官网</a>描述，HomeAssistant是一个开源的、以本地控制和隐私保护为基础的家庭自动化系统。有以下几个特点</p>
+<h2 id="1-开放"><a href="#1-开放" class="headerlink" title="1. 开放"></a>1. 开放</h2><p>  HA是一个开源的平台系统，可以在<a target="_blank" rel="noopener" href="https://github.com/home-assistant">github</a>找到相关源代码，同时它有丰富的开放API，因此有了丰富的插件（如Integration、Frontend等等）支持，可以带来这些好处：1）将其他平台的设备，全部接入HA，这样就实现了家庭智能设备的统一控制，如小米、涂鸦、Sonoff、；2）将HA上的设备统一接入其他平台，如你一堆的小米设备接入苹果的HomeKit，可以实现Siri来控制小米设备；3）其他自定义设备如软路由、NAS、DIY的设备通过各种方式接入HA控制；4）提供iOS、Android、PC各平台的控制终端</p>
+<h2 id="2-本地部署"><a href="#2-本地部署" class="headerlink" title="2. 本地部署"></a>2. 本地部署</h2><p>  HA往往部署在本地的设备，这样有2个好处：1）速度快，比如你想做一个开门后自动开灯且播放欢迎提示音的自动化，使用云服务可能要几秒，使用家庭本地网络的HA会节省了公网网络传输的时间消耗；2）隐私，如果你比较担心家里的智能音箱、各种智能设备在偷偷监听上报数据（这个事情完全靠厂商自觉，本身智能设备就要持续上报数据，你无法判断是否上报了与其功能无关的数据），使用HA就没有这方面的苦恼了。</p>
+<h2 id="3-更新频繁"><a href="#3-更新频繁" class="headerlink" title="3. 更新频繁"></a>3. 更新频繁</h2><p>  HA目前一个月要更新好几个版本，一些漏洞在持续修复，能力也在持续优化，同时有很大的社区支持，</p>
+<h1 id="HA安装"><a href="#HA安装" class="headerlink" title="HA安装"></a>HA安装</h1><p>官网给出4中安装方法（后2中不推荐）：</p>
+<ol>
+<li>Home Assistant Operating System：作为操作系统直接安装在机器上</li>
+<li>Home Assistant Container:容器安装，如docker</li>
+<li>Home Assistant Supervised：手动安装（不推荐）</li>
+<li>Home Assistant Core:手动安装（不推荐）</li>
+</ol>
+<p>HA底层基于Python，基本所有的系统都可以支持，所以几乎不挑硬件，X86、ARM平台都可以，官网推荐了两种ARM的单板系统（SBC，single-board computers）:</p>
+<ol>
+<li>Home assistant Yellow（基于树莓派）</li>
+</ol>
+<p><img src="https://www.crowdsupply.com/img/7b5c/home-assistant-amber-with-cm4-no-heat-sink-top_jpg_md-xl.jpg" alt="Home assistant Yellow"><br>2. Home assistant Blue（基于Odroid）<br><img src="https://cdn.hardkernel.com/wp-content/uploads/2020/07/odroidn2plusA.jpg" alt="Home assistant Blue"></p>
+<h1 id="平替"><a href="#平替" class="headerlink" title="平替"></a>平替</h1><p>这两个SBC在中国不太好买，其次价格较高（Yellow的最低价格115刀，Blue的价格可以去搜Odroid N2，树莓派今年的价格也飙上去了）100刀都可以买到一个X86的主机来做server了。仔细看一下这个Blue，他的CPU是晶晨的S922X，晶晨还有S905系列，市场容量相当大，于是买了几个来试试。</p>
+<h2 id="硬件要求"><a href="#硬件要求" class="headerlink" title="硬件要求"></a>硬件要求</h2><table>
+<thead>
+<tr>
+<th>部件</th>
+<th>要求</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CPU</td>
+<td>64位的4核ARM</td>
+<td>32位的晶晨S805（ARMv7）应该是不行的，跑很多东西找不到合适的包。S905、S922的各种型号，全志，只要能装Armbian都可以</td>
+</tr>
+<tr>
+<td>内存</td>
+<td>1G勉强也够，最好2G</td>
+<td>1G内存一般可用的有800M，我是用Docker跑，跑起来HA的7个容器，内存就已经捉襟见肘了，再跑一些插件、MQTT、nodered这些容器就不够用了，内存不够用会导致系统频繁读写交换空间Zram，导致系统负载高、无响应</td>
+</tr>
+<tr>
+<td>磁盘&#x2F;TF卡</td>
+<td>16G以上：8G的存储是不够的，armbian安装加上容器大概需要7G左右；最好是大牌的如铠侠、闪迪、三星这些；也可以外接一个16g以上的SSD</td>
+<td>我之前用过杂牌TF卡，读写太慢会因为IO负载高最终导致系统无响应，后来用N1+铠侠64G，用了几个月感觉有点浪费，最后用了盒子原生的2+16eMMC的配置，刚好够</td>
+</tr>
+<tr>
+<td>网络</td>
+<td>有线网卡不需要千兆，百兆足够，；无线没太大用处</td>
+<td>做服务器流量不大，但要响应快，有线比较靠谱</td>
+</tr>
+<tr>
+<td>蓝牙</td>
+<td>能驱动的板载蓝牙；USB蓝牙接收器；没有蓝牙也可以</td>
+<td>蓝牙的功能很重要，很多智能设备都是蓝牙的，如果armbian系统没有可驱动的蓝牙，也可以有其他替代办法</td>
+</tr>
+</tbody></table>
+<p>由此看出，2G内存+16geMMC的配置是比较划算的，如果没有特殊需求，不需要另加其他外设。目前市场上还可以买到海思的ARM盒子，但海思芯片刷Armbian的不多，社区文档页少（可以看这个：<a target="_blank" rel="noopener" href="https://github.com/glinuz/hi3798mv100">glinuz&#x2F;hi3798mv100</a>），尽量还是选择其他芯片。</p>
+<h2 id="试过的盒子"><a href="#试过的盒子" class="headerlink" title="试过的盒子"></a>试过的盒子</h2><h3 id="1-R3300-L"><a href="#1-R3300-L" class="headerlink" title="1. R3300-L"></a>1. R3300-L</h3><p><img src="https://user-images.githubusercontent.com/2712885/161371283-2a532ffd-d4c3-4c08-a9f4-2ae0ea84257f.jpg" alt="IMG_5931"><br><img src="https://user-images.githubusercontent.com/2712885/161371289-b178610d-5090-44cf-8f14-56a9d3fe80bc.jpg" alt="IMG_5932"></p>
+<p>根据成色、是否刷机、配件不同，价格也不同，普遍在50-70左右。</p>
+<p>最开始买了这个小红盒，由于含有一个读卡器，且通过AV孔可以不拆机按住Reset键从而直接刷机，所以还比较受欢迎。最开始刷了Openwrt+Docker-ce安装HA，因为内存只有1G，会出现上文说道的负载高无响应的问题，所以后来删除了HA，只用作Openwrt，Openwrt本身对内存的要求不高（只需要100M左右），目前一直在用，半年没重启过了，稳得很。</p>
+<h3 id="2-N1"><a href="#2-N1" class="headerlink" title="2. N1"></a>2. N1</h3><p><img src="https://user-images.githubusercontent.com/2712885/161371533-2e883c96-e6f3-46e6-b671-a95c30632806.jpg" alt="n1"><br>现在全套配件的得150+了，不是很划算，但确实N1这种各方面都不错的盒子也不多。<br>N1真的是各方面都基本够用，S905D+千兆网口+蓝牙+双频WiFi，不太有短板，怪不得这么几年过去了还是这么火，蓝牙是博通的芯片，可以Armbian直接驱动。但是如果刷Armbian会觉得它没有读卡器比较鸡肋，当然用USB外接读卡器或者直接接SSD都是好选项。N1+读卡器+64G卡用了大半年，没太大的问题，就是感觉老外接一个读卡器怪难受。</p>
+<h3 id="3-M401、E900V22C等新版魔百和"><a href="#3-M401、E900V22C等新版魔百和" class="headerlink" title="3. M401、E900V22C等新版魔百和"></a>3. M401、E900V22C等新版魔百和</h3><p><img src="https://user-images.githubusercontent.com/2712885/161371740-77038928-5101-4a5b-ae7e-0f7814c70822.jpg" alt="m401a"><br><img src="https://user-images.githubusercontent.com/2712885/161371952-f717f3af-c8dd-4748-9222-cd16f298e3ca.jpg" alt="m401a2"><br>原装全套（盒子+网线+HDMI线+蓝牙遥控）价格在70左右，盒子比较新，不太买得到单机头的<br>最近在网上捡了一个移动新出的盒子M401A，买的时候只看重了它2g内存+16geMMC的配置，终于不用外接TF卡了。买来之后发现这个CPU是S905L3A，性能还不错，只是当前蓝牙还无法驱动。先是插了一个蓝牙接收器，但是蓝牙老掉线，后来索性就不要蓝牙了。</p>
+<h3 id="4-其他ARM盒子、板子"><a href="#4-其他ARM盒子、板子" class="headerlink" title="4. 其他ARM盒子、板子"></a>4. 其他ARM盒子、板子</h3><p>树莓派、香橙派、各种派</p>
+<h1 id="安装步骤（卡刷）"><a href="#安装步骤（卡刷）" class="headerlink" title="安装步骤（卡刷）"></a>安装步骤（卡刷）</h1><p>卡刷或者线刷都可以，其中卡刷简单方便，不容易损坏盒子本身（丢三码），下文以卡刷为例</p>
+<h3 id="1-寻找Armbian镜像并写入U盘或者TF卡"><a href="#1-寻找Armbian镜像并写入U盘或者TF卡" class="headerlink" title="1. 寻找Armbian镜像并写入U盘或者TF卡"></a>1. 寻找Armbian镜像并写入U盘或者TF卡</h3><p>根据型号在网上找到合适的镜像，注意尽量不要找太老的镜像，如果是Ubuntu尽量选1804版本的或者2004版本的，版本较老本身没有太大的问题，但随着软件更新，难免未来某些软件就不支持老版本的内核了。大家在网上找到的镜像其实都差不多，无非就是根据不同的硬件所带的dtb和驱动不同，所以如果无法找到相应的镜像，可以随便找一个较新的的镜像，修改合适的dtb就行了。<br>这里提供一个R3300L的镜像： <a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1BesJhaKfKMF1WJapmUH6_Q">https://pan.baidu.com/s/1BesJhaKfKMF1WJapmUH6_Q</a> 提取码: vs5g 下载：Armbian_5.99_Aml-g12_Ubuntu_bionic_default_5.3.0_rtl8189ftv.tar，不带桌面，带WiFi。<br>持续更新的镜像下载：<a target="_blank" rel="noopener" href="https://github.com/zzcand111/amlogic-s9xxx-armbian">https://github.com/zzcand111/amlogic-s9xxx-armbian</a> 。历史的一些镜像下载：<a target="_blank" rel="noopener" href="https://users.armbian.com/balbes150/arm-64/">https://users.armbian.com/balbes150/arm-64/</a> (5.9的内核)。<br>要注意，5.9的内核我已经试过写入eMMC，可以正常使用，如果是5.9以上的内核，很多人说刷入eMMC会导致无法启动。<br>将镜像解压出来img格式，用Rufus等软件写入TF卡或者U盘。</p>
+<h3 id="2-更换DTB，从U盘启动Armbian"><a href="#2-更换DTB，从U盘启动Armbian" class="headerlink" title="2. 更换DTB，从U盘启动Armbian"></a>2. 更换DTB，从U盘启动Armbian</h3><p>写好U盘镜像后，U盘上会有一个FAT32的名叫BOOT的分区，如果是<a target="_blank" rel="noopener" href="https://users.armbian.com/balbes150/arm-64/">https://users.armbian.com/balbes150/arm-64/</a> 下载的镜像，需要做2件事情：</p>
+<ol>
+<li>在extlinux&#x2F;extlinux.conf文件中修改dtb文件</li>
+<li>将u-boot-s905（只针对S905) u-boot-s905x2-s922* u-boot-s905x-s912（x905[w,d,l]）中的某1个名词改为u-boot.ext</li>
+</ol>
+<p>如果是其他地方下载的，只需要在BOOT分区的根目录下的uEnv.ini文件中修改dtb文件即可。<br>M401a、E900V22c等s905L3a的芯片使用dtb：<code>meson-g12a-u200.dtb</code>，R3300L等s905L芯片使用<code>meson-gxl-s905x-p212.dtb</code>。其他的机器找到响应的dtb文件即可。</p>
+<h4 id="U盘启动的方法"><a href="#U盘启动的方法" class="headerlink" title="U盘启动的方法"></a>U盘启动的方法</h4><p>R3300L用牙签插入AV孔，按住Reset键，然后插上电源。其他盒子可以尝试root后安装从U盘启动的APP，R401可以拆开外壳，Reset键在板子背后，其他还有按遥控器的方法，可以根据型号自行搜索。从U盘启动后可以看有线网络是否驱动，这个是最重要的，一般都可以驱动。<br>第一次启动可能会花几分钟时间，因为系统要执行一些初始化的任务，可以插上HDMI屏幕，看一下是否成功。</p>
+<h3 id="3-备份eMMC的系统"><a href="#3-备份eMMC的系统" class="headerlink" title="3. 备份eMMC的系统"></a>3. 备份eMMC的系统</h3><p>进入U盘的Armbian系统，执行命令ddbr，根据提示选择备份系统到U盘。</p>
+<h3 id="4-写入eMMC"><a href="#4-写入eMMC" class="headerlink" title="4. 写入eMMC"></a>4. 写入eMMC</h3><p>一般的CPU（ s905[x,w,l,x2,x3],s912,s922）执行命令<code>/root/install-aml.sh</code>，将系统写入eMMC。如果CPU是S905（不带任何后缀字母的版本），执行<code>/root/install-aml-s905-emmc.sh</code>。写入成功后断电重启。</p>
+<h3 id="5-更新证书"><a href="#5-更新证书" class="headerlink" title="5. 更新证书"></a>5. 更新证书</h3><p>如果下载的比较老的镜像，在更换apt源之前需要先更新本机证书：<code>apt install --reinstall ca-certificates</code>，不然由于本机证书比较旧，换源后会识别新的更新源证书无效。</p>
+<h3 id="6-换源"><a href="#6-换源" class="headerlink" title="6. 换源"></a>6. 换源</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ focal main restricted universe multiverse</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src  focal main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ focal-security main restricted universe multiverse</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://ports.ubuntu.com/ focal-security main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ focal-updates main restricted universe multiverse</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http focal-updates main restricted universe multiverse</span></span><br><span class="line"></span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ focal-backports main restricted universe multiverse</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://ports.ubuntu.com/ focal-backports main restricted universe multiverse</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>换源后执行：<code>apt update</code></p>
+<h3 id="7-安装docker-ce"><a href="#7-安装docker-ce" class="headerlink" title="7. 安装docker-ce"></a>7. 安装docker-ce</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">创建安装目录</span></span><br><span class="line">cd; mkdir download;cd download</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">下载安装脚本</span></span><br><span class="line">curl -fsSL https://get.docker.com -o get-docker.sh</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">赋予权限</span></span><br><span class="line">chmod a+x get-docker.sh </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">执行安装</span></span><br><span class="line">./get-docker.sh --mirror Aliyun</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>安装完成后，修改国内镜像（加速下载镜像），更改docker目标文件夹（方便备份）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/docker/daemon.json</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">填入如下内容</span></span><br><span class="line">&#123;</span><br><span class="line">  &quot;bip&quot;: &quot;172.31.0.1/24&quot;,</span><br><span class="line">  &quot;data-root&quot;: &quot;/opt/docker/&quot;, #docker安装目录，如果eMMC不够，可以把此目录挂载到外部TF卡或者SSD</span><br><span class="line">  &quot;log-level&quot;: &quot;warn&quot;,</span><br><span class="line">  &quot;log-driver&quot;: &quot;json-file&quot;,</span><br><span class="line">  &quot;log-opts&quot;: &#123;</span><br><span class="line">     &quot;max-size&quot;: &quot;10m&quot;,</span><br><span class="line">     &quot;max-file&quot;: &quot;5&quot;</span><br><span class="line">   &#125;,</span><br><span class="line">   &quot;registry-mirrors&quot;: [</span><br><span class="line">     &quot;https://xxxx.mirror.aliyuncs.com&quot; #加速镜像</span><br><span class="line">   ]</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">重启docker</span></span><br><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure>
+<h3 id="8-安装HA"><a href="#8-安装HA" class="headerlink" title="8. 安装HA"></a>8. 安装HA</h3><p>安装HA比较简单，只需要安装homeassistant-supervisor，它会自动安装所有其他镜像。根据网速、CPU、磁盘写入速度不同，安装时间不确定，大概十几分钟到1个小时之间。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">让homeassistant不做健康检查，/opt/docker为之前设置的docker安装目录</span></span><br><span class="line">vim /opt/docker/hassio/jobs.json</span><br><span class="line">写入：</span><br><span class="line">&#123;&quot;ignore_conditions&quot;: [&quot;healthy&quot;]&#125;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">安装hassio-supervisor</span></span><br><span class="line">docker run -d --name hassio_supervisor  --privileged \</span><br><span class="line">-v /var/run/docker.sock:/var/run/docker.sock \ </span><br><span class="line">-v /var/run/dbus:/var/run/dbus \</span><br><span class="line">-v /opt/docker/hassio:/data \ #指定HA目录</span><br><span class="line">-e SUPERVISOR_SHARE=&quot;/opt/docker/hassio&quot; \</span><br><span class="line">-e SUPERVISOR_NAME=hassio_supervisor \</span><br><span class="line">-e HOMEASSISTANT_REPOSITORY=&quot;homeassistant/qemuarm-64-homeassistant&quot; \</span><br><span class="line">--restart unless-stopped homeassistant/aarch64-hassio-supervisor:2022.03.5 #2022.03.5是版本号，可以去https://hub.docker.com/r/homeassistant/aarch64-hassio-supervisor/tags 找一个最新的稳定版版本</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>想看到执行过程的，可以执行<code>docker logs -f hassio_supervisor</code>查看实时日志，有可能有些版本的docker安装好supervisor后不能上网，可以临时添加<code>--net host</code>使它可以上网下载其他镜像，完成后再去掉此选项。因为这几个HA的镜像必须在一个内网才能互相访问。</p>
+<h4 id="9-其他安装项"><a href="#9-其他安装项" class="headerlink" title="9. 其他安装项"></a>9. 其他安装项</h4><p>其他如MQTT、nodered可以在HA安装好后使用HAsupervisor以插件的形式安装，但如果想自己安装也可以。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">安装MQTT，需要进入镜像修改配置文件</span></span><br><span class="line">docker run --name mqtt --restart=always -dit -p 1883:1883 -p 9001:9001 -v /mosquitto/data -v /mosquitto/log eclipse-mosquitto</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">安装nodered，需要手动设置/opt/docker/node_red_data的访问权限</span></span><br><span class="line">chmod 777 /opt/docker/node_red_data</span><br><span class="line">docker run -d -it -p 1880:1880 -v /opt/docker/node_red_data:/data --name nodered nodered/node-red</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="10-网页打开HA页面，"><a href="#10-网页打开HA页面，" class="headerlink" title="10. 网页打开HA页面，"></a>10. 网页打开HA页面，</h3><p>假设Armbian的IP是192.168.3.3，则电脑打开<a target="_blank" rel="noopener" href="http://192.168.3.3:8123/">http://192.168.3.3:8123</a>查看安装状态，如果安装完成，则会出现设置密码的界面。</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/homeassistant-docker-armbian/" rel="tag">homeassistant docker armbian</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/p/hass-config/"
+                    data-tooltip="Home Assistant控制设备"
+                    aria-label="下一篇: Home Assistant控制设备"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://lkisme.github.io/p/homeassistant-on-cheap-box/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://lkisme.github.io/p/homeassistant-on-cheap-box/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://lkisme.github.io/p/homeassistant-on-cheap-box/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 KK. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/p/hass-config/"
+                    data-tooltip="Home Assistant控制设备"
+                    aria-label="下一篇: Home Assistant控制设备"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://lkisme.github.io/p/homeassistant-on-cheap-box/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://lkisme.github.io/p/homeassistant-on-cheap-box/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://lkisme.github.io/p/homeassistant-on-cheap-box/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://lkisme.github.io/p/homeassistant-on-cheap-box/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://lkisme.github.io/p/homeassistant-on-cheap-box/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://lkisme.github.io/p/homeassistant-on-cheap-box/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.webp" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">KK</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-le5qwohhcsdc4eeosmiwsnegjup0wrk6noor9whnw5gr1rq1ynz9edeerhik.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>
