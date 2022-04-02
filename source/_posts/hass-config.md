@@ -1,13 +1,24 @@
 ---
 title: Home Assistant控制设备
-tags:
+tags: homeassistant armbian
+categories: 智能家居
+thumbnailImage: >-
+  https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg
+coverImage: >-
+  https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg
+coverCaption: 天津暮色
+coverMeta: out
+coverSize: partial
+date: 2022-04-02 22:01:37
 ---
+
 本文将包含如下内容：
 1. Home Assistant配置使用HACS
 2. 连接控制小米设备
 3. 连接控制Sonoff设备
 4. 连接控制涂鸦设备
 5. 连接控制自定义设备
+5. 使用苹果HomeKit控制HA设备
 6. Home Assistant备份与恢复
 
 <!-- more -->
@@ -90,7 +101,10 @@ HA会在启动的时候扫描此文件和其他配置项，加载相应的集成
 # 连接控制自定义设备
 如果是自定义的设备，可以通过MQTT连接到HA来控制。
 
+# 使用苹果HomeKit控制HA设备
+HA自带HomeKit集成，点击配置（Configuration）->设备和服务（Devices&Services）->添加集成（Add integration），搜索`HomeKit`进行安装。在之后的配置界面`HomeKit Mode`选择`bridge`，表示把HA当做一个网桥来设置，在`Inclusion Mode`选择`include`，表示手动选择哪些设备要暴露给HomeKit来控制。
 
+配置完成后在HA的通知信息里可以看到提醒，会生成一个二维码，使用苹果设备在HA的统一网段内，添加HomeKit设备，根据提示一步步操作就可以了。
 
 # Home Assistant备份与恢复
 点击配置（Configuration）->插件、备份和Supervisor（Add-ons、Backup&Supervisor）->备份（Backup）

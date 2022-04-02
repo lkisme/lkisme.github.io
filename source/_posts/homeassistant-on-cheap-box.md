@@ -1,14 +1,17 @@
 ---
-title: homeassistant-on-cheap-box
+title: 使用廉价电视盒子安装Home Assistant
 tags: homeassistant docker armbian
 categories: 智能家居
-thumbnailImage: https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg
-coverImage: https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg
-coverCaption: "The bund"
+thumbnailImage: >-
+  https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg
+coverImage: >-
+  https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg
+coverCaption: The bund
 coverMeta: out
 coverSize: partial
-
+date: 2022-04-02 22:02:25
 ---
+
 
 本文将包含如下内容：
 1. Home Assistant简介
@@ -60,7 +63,7 @@ HA底层基于Python，基本所有的系统都可以支持，所以几乎不挑
 ![IMG_5931](https://user-images.githubusercontent.com/2712885/161371283-2a532ffd-d4c3-4c08-a9f4-2ae0ea84257f.jpg)
 ![IMG_5932](https://user-images.githubusercontent.com/2712885/161371289-b178610d-5090-44cf-8f14-56a9d3fe80bc.jpg)
 
-根据成色、是否刷机、配件不同，价格也不同，普遍在50-60左右。
+根据成色、是否刷机、配件不同，价格也不同，普遍在50-70左右。
 
 最开始买了这个小红盒，由于含有一个读卡器，且通过AV孔可以不拆机按住Reset键从而直接刷机，所以还比较受欢迎。最开始刷了Openwrt+Docker-ce安装HA，因为内存只有1G，会出现上文说道的负载高无响应的问题，所以后来删除了HA，只用作Openwrt，Openwrt本身对内存的要求不高（只需要100M左右），目前一直在用，半年没重启过了，稳得很。
 
