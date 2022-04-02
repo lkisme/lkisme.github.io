@@ -3,9 +3,9 @@ title: Home Assistant控制设备
 tags: homeassistant armbian
 categories: 智能家居
 thumbnailImage: >-
-  https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg
+  https://user-images.githubusercontent.com/2712885/161386806-bbda8b86-8066-4320-9e12-20add514ba3c.jpg
 coverImage: >-
-  https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg
+  https://user-images.githubusercontent.com/2712885/161386806-bbda8b86-8066-4320-9e12-20add514ba3c.jpg
 coverCaption: 天津暮色
 coverMeta: out
 coverSize: partial
