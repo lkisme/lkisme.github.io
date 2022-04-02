@@ -57,6 +57,7 @@ coverSize: partial
 ## 实操
 
 首先我买了一个线控网关，接起来真的费劲，接线图如下所示：
+![大金控制面板](https://user-images.githubusercontent.com/2712885/161364516-fc45bee4-67c9-4025-886c-c05143622af1.JPG)
 
 其原理上边讲了，相当于一个内机接了2个遥控，第二个遥控配上了WiFi网关。
 
