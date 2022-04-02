@@ -4,6 +4,8 @@ tags: homeassistant docker armbian
 categories: 智能家居
 thumbnailImage: >-
   https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg
+thumbnailImagePosition: bottom
+
 coverImage: >-
   https://user-images.githubusercontent.com/2712885/161280108-acbbbd42-1c65-45f8-ab58-66b5face9d9c.jpg
 coverCaption: The bund
@@ -18,6 +20,7 @@ date: 2022-04-02 22:02:25
 2. 可安装Armbian的盒子简单分析
 3. 安装Armbian的简要步骤
 4. 安装Home Assistant的简要步骤
+
 <!-- more -->
 
 # Home Assistant简介 

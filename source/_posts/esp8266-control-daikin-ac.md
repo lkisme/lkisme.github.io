@@ -8,7 +8,7 @@ thumbnailImage: https://user-images.githubusercontent.com/2712885/161278001-c51e
 thumbnailImagePosition: bottom
 coverImage: https://user-images.githubusercontent.com/2712885/161278001-c51e14f9-c5c0-44f2-9dce-0bb5f0f5542b.jpg 
 
-coverCaption: "The bund"
+coverCaption: "山间小路"
 coverMeta: out
 coverSize: partial
 
