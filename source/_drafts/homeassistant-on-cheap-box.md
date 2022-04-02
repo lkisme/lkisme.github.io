@@ -9,7 +9,7 @@ coverMeta: out
 coverSize: partial
 
 ---
-# Home Assistant简介
+# Home Assistant简介 
 按照[官网](https://www.home-assistant.io)描述，HomeAssistant是一个开源的、以本地控制和隐私保护为基础的家庭自动化系统。有以下几个特点
 1. 开放
   HA是一个开源的平台系统，可以在[github](https://github.com/home-assistant)找到相关源代码，同时它有丰富的开放API，因此有了丰富的插件（如Integration、Frontend等等）支持，可以带来这些好处：1）将其他平台的设备，全部接入HA，这样就实现了家庭智能设备的统一控制，如小米、涂鸦、Sonoff、；2）将HA上的设备统一接入其他平台，如你一堆的小米设备接入苹果的HomeKit，可以实现Siri来控制小米设备；3）其他自定义设备如软路由、NAS、DIY的设备通过各种方式接入HA控制；4）提供iOS、Android、PC各平台的控制终端
@@ -48,16 +48,26 @@ HA底层基于Python，基本所有的系统都可以支持，所以几乎不挑
 
 ## 试过的盒子
 1. R3300-L
+
 ![IMG_5931](https://user-images.githubusercontent.com/2712885/161371283-2a532ffd-d4c3-4c08-a9f4-2ae0ea84257f.jpg)
 ![IMG_5932](https://user-images.githubusercontent.com/2712885/161371289-b178610d-5090-44cf-8f14-56a9d3fe80bc.jpg)
+
+根据成色、
 
 最开始买了这个小红盒，由于含有一个读卡器，且通过AV孔可以不拆机按住Reset键从而直接刷机，所以还比较受欢迎。最开始刷了Openwrt+Docker-ce安装HA，因为内存只有1G，会出现上文说道的负载高无响应的问题，所以后来删除了HA，只用作Openwrt，Openwrt本身对内存的要求不高（只需要100M左右），目前一直在用，半年没重启过了，稳得很。
 
 2. N1
+
 ![n1](https://user-images.githubusercontent.com/2712885/161371533-2e883c96-e6f3-46e6-b671-a95c30632806.jpg)
 N1真的是各方面都基本够用，S905D+千兆网口+蓝牙+双频WiFi，不太有短板，怪不得这么几年过去了还是这么火，蓝牙是博通的芯片，可以Armbian直接驱动。但是如果刷Armbian会觉得它没有读卡器比较鸡肋，当然用USB外接读卡器或者直接接SSD都是好选项。N1+读卡器+64G卡用了大半年，没太大的问题，就是感觉老外接一个读卡器怪难受。
 
 3. M401
+
 ![m401a](https://user-images.githubusercontent.com/2712885/161371740-77038928-5101-4a5b-ae7e-0f7814c70822.jpg)
-![m401a2](https://user-images.githubusercontent.com/2712885/161371749-74aa6b3f-e7f3-4877-bc22-466716c837d3.jpg)
+![m401a2](https://user-images.githubusercontent.com/2712885/161371952-f717f3af-c8dd-4748-9222-cd16f298e3ca.jpg)
+
 最近在网上捡了一个移动新出的盒子M401A，买的时候只看重了它2g内存+16gEmmc的配置，终于不用外接TF卡了。买来之后发现这个CPU是S905L3A，性能还不错，只是当前蓝牙还无法驱动。先是插了一个蓝牙接收器，但是蓝牙老掉线，后来索性就不要蓝牙了。
+
+#
+# 
+# 安装步骤
